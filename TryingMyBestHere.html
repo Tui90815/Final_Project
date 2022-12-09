@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Leaflet Map</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
+</head>
+<body>
+    <!-- Our web map and content will go here -->
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <div id="map" style="width: 1000px; height: 600px">
+    </div>
+    <script>
+    	var map = L.map('map', {center: [37.3387, -121.8853], zoom: 10});
+    	L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    	map.doubleClickZoom.disable();
+
+        // Create Leaflet Control Object for Legend
+var legend = L.control({position: 'bottomright'});
+
+    // Function that runs when legend is added to map
+    legend.onAdd = function (map) {
+         // Create Div Element and Populate it with HTML
+        var div = L.DomUtil.create('div', 'legend');            
+        div.innerHTML += '<b>Percent of the Population Disabled</b><br />';
+        div.innerHTML += 'by census tract<br />';
+        div.innerHTML += '<br>';
+        div.innerHTML += '<i style="background: #ead1dc"></i><p>15+</p>';
+        div.innerHTML += '<i style="background: #d5a6bd"></i><p>10-15</p>';
+        div.innerHTML += '<i style="background: #c27ba0"></i><p>5-10</p>';
+        div.innerHTML += '<i style="background: #a64d79"></i><p>0-5</p>';
+        div.innerHTML += '<hr>';
+        div.innerHTML += '<i style="background: #BFBCBB"></i><p>No Data</p>';
+        
+    // Return the Legend div containing the HTML content
+    return div;
+};
+
+// Add Legend to Map
+legend.addTo(map);
+
+    // Add Scale Bar to Map
+    L.control.scale({position: 'bottomleft'}).addTo(map);
+
+
+        // add point marker
+        var myDataPoint = L.marker([37.236560, -121.777940]).addTo(map);
+        myDataPoint.bindPopup("San Andreas Regional Center");
+        myDataPoint.bindPopup("<h3>San Andreas Regional Center</h3><p>6203 San Ignacio Ave Suite 200, San Jose, CA 95119<br>Information about Center.</p>");
+
+        var myDataPoint = L.marker([37.332420, -121.891620]).addTo(map);
+        myDataPoint.bindPopup("San Jose Disability Services");
+        myDataPoint.bindPopup("<h3>San Jose Disability Services</h3><p>100 W San Fernando St, San Jose, CA 95113<br>Information about Center.</p>");
+
+        var myDataPoint = L.marker([37.252040, -121.806180]).addTo(map);
+        myDataPoint.bindPopup("Social Vocational Services");
+        myDataPoint.bindPopup("<h3>Social Vocational Services</h3><p>124 Blossom Hill Rd f, San Jose, CA 95123<br>Information about Center.</p>");
+
+        var myDataPoint = L.marker([37.250650, -121.854600]).addTo(map);
+        myDataPoint.bindPopup("Trinity CHANGE");
+        myDataPoint.bindPopup("<h3>Trinity CHANGE</h3><p>835 Blossom Hill Rd #116, San Jose, CA 95123<br>Information about Center.</p>");
+
+        var myDataPoint = L.marker([37.264130, -121.923420]).addTo(map);
+        myDataPoint.bindPopup("Aspire Advocacy, LLC");
+        myDataPoint.bindPopup("<h3>Aspire Advocacy, LLC</h3><p>Todd Way, San Jose, CA 95124<br>Information about Center</p>");
+
+        var myDataPoint = L.marker([37.379500, -121.942070]).addTo(map);
+        myDataPoint.bindPopup("Social Vocational Services");
+        myDataPoint.bindPopup("<h3>Social Vocational Services</h3><p>471 Gianni St, Santa Clara, CA 95054<br>Information about Center</p>");
+
+        // create a polyline
+        var myDataLine = L.polyline([[39.957578, -75.162355], 
+                        [39.962403, -75.161638],
+                        [39.971466, -75.159464],
+                        [39.978688, -75.157887],
+                        [39.987009, -75.156035],
+                        [39.986318, -75.153225],
+                        [39.981397, -75.153458],
+                        [39.979940, -75.155355]
+                        ],
+                        {color: 'purple', weight: 5}).addTo(map);
+
+        // Bind popup to line object
+        myDataLine.bindPopup("Lilly's Zone");
+        // create a polygon of Philadelphia metro
+        var myArea = L.polygon([[39.949983, -75.169603],
+                    [39.948578, -75.157767],
+                    [39.986989, -75.148504],
+                    [39.989348, -75.163811]
+                    ],
+                    {color: 'pink', weight: 1}).addTo(map);
+                    
+        // Bind popup to area object
+        myArea.bindPopup("The Lilly Zone");
+        // Create an Empty Popup
+        var popup = L.popup();
+        // Write function to set Properties of the Popup
+        function onMapClick(e) {
+            popup
+                .setLatLng(e.latlng)
+                .setContent("You clicked the map at " + e.latlng.toString())
+                .openOn(map);
+        }
+
+        // Listen for a click event on the Map element
+        map.on('click', onMapClick);
+        // load GeoJSON from an external file
+        $.getJSON("/Users/Lilli/Desktop/YouCan/Peachy.geoJson",function(data){
+            // add GeoJSON layer to the map once the file is loaded
+            L.geoJson(data, {
+                onEachFeature: function(feature, layer){
+            layer.bindPopup('Percent of Population that is Disabled: '+feature.properties.PERDEC);
+                }
+            }).addTo(map);
+        });
+
+        // Set style function that sets fill color property equal to blood lead
+    function styleFunc(feature) {
+      return {
+        fillColor: setColorFunc(feature.properties.PERDEC),
+        fillOpacity: 0.9,
+        weight: 1,
+        opacity: 1,
+        color: '#ffffff',
+        dashArray: '3'
+          };
+            }
+
+    // Set function for color ramp, you can use a better palette
+    function setColorFunc(density){
+     return density > 15 ? '#800000' :
+          density > 10 ? '#A0522D' :
+           density > 5 ? '#DAA520' :
+           density > 0 ? '#FFF8DC' :
+                         '#BFBCBB';
+};
+
+    </script>
+</body>
+</html>
